@@ -77,7 +77,7 @@ custom:
 
 functions:
   bnkService:
-    handler: src/omise.bnkMember
+    handler: src/omiseCharge.charge
     events:
       - http:
           method: get
