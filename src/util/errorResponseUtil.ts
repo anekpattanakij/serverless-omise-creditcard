@@ -38,7 +38,6 @@ export const errorToHttpStatusCode = (
         error.code = omiseErrorCode;
       }
     }
-
     returnErrorResponse.body = JSON.stringify({
       code: error.code,
       message: error.message,

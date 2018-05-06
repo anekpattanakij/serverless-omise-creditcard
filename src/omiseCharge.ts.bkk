@@ -1,12 +1,11 @@
 import axios from 'axios';
 import * as FormData from 'form-data';
-import * as request from 'request';
 import * as validator from 'validator';
-
 import {
   Error,
   ERROR_CODE_INVALID_INPUT,
-  ERROR_CODE_NETWORK_ERROR,
+  ERROR_CODE_MYSQL_CONNECTION,
+  ERROR_CODE_USER_DUPLICATE_EMAIL,
 } from './common/error';
 import {
   HTTP_REQUEST_SUCCESS,
@@ -40,38 +39,40 @@ export const chargeByToken = async (event, context, callback) => {
       throw new Error(ERROR_CODE_INVALID_INPUT, 'Invalid input');
     }
 
-    const formData = {
-      amount: inputObject.amount,
-      currency: inputObject.currency,
-      card: inputObject.card,
-    };
+    axios.defaults.headers.post['Content-Type'] = 'multipart/form-data';
+    axios.defaults.headers.post['Authorization'] = Config.OMISE_PRIVATE_KEY;
+    const data = new FormData();
 
-    request.post(
-      {
-        url: OMISE_API_URL_CHARGE,
+    // data.append('amount', parseInt(inputObject.amount, 10));
+    data.append('amount', '1000000');
+    data.append('currency', inputObject.currency);
+    data.append('card', inputObject.card);
+
+    console.log(data);
+
+    axios.interceptors.request.use(request => {
+      console.log('Starting Request', request);
+      return request;
+    });
+
+    await axios
+      .post(OMISE_API_URL_CHARGE, data, {
         auth: {
           username: 'skey_test_5bb3w73w1cg6ojqpzqc',
           password: '',
         },
-        formData,
-      },
-      (err, httpResponse, body) => {
-        if (err) {
-          response = errorToHttpStatusCode(
-            new Error(ERROR_CODE_NETWORK_ERROR, err),
-          );
-        }
-        if (httpResponse !== '200') {
-          const returnResult = JSON.parse(body);
-          response = errorToHttpStatusCode(new Error(returnResult.code, returnResult.message));
-        }
-        // successs
-        callback(null, response);
-      },
-    );
+        headers: { 'content-type': 'multipart/form-data' },
+      })
+      .then(returnToken => {
+        console.log(returnToken);
+        response.statusCode = HTTP_REQUEST_SUCCESS;
+      })
+      .catch(error => {
+        response = errorToHttpStatusCode(Error.transformErrorFromAxios(error));
+      });
   } catch (error) {
     console.log(error);
     response = errorToHttpStatusCode(error);
-    callback(null, response);
   }
+  callback(null, response);
 };

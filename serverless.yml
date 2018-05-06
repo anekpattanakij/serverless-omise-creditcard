@@ -82,6 +82,7 @@ functions:
       - http:
           method: post
           path: chargeByToken
+          cors: true
           integration: lambda-proxy
           response:
             headers:
