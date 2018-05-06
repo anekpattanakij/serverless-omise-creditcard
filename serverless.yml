@@ -77,11 +77,11 @@ custom:
 
 functions:
   bnkService:
-    handler: src/omiseCharge.charge
+    handler: src/omiseCharge.chargeByToken
     events:
       - http:
-          method: get
-          path: bnkMembers
+          method: post
+          path: chargeByToken
           integration: lambda-proxy
           response:
             headers:

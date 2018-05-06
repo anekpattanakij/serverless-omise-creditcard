@@ -1,4 +1,5 @@
 import axios from 'axios';
+import * as FormData from 'form-data';
 import * as validator from 'validator';
 import {
   Error,
@@ -12,49 +13,9 @@ import {
 } from './common/responseRequest';
 import { errorToHttpStatusCode } from './util/errorResponseUtil';
 
-const OMISE_API_URL_CHARGE = 'https://vault.omise.co/tokens';
+const OMISE_API_URL_CHARGE = 'https://api.omise.co/charges';
 
-const getBnkMembers = () => {
-  return [
-    {
-      nickname: 'Cherprang',
-      full_name: 'Cherprang Areekul',
-    },
-    {
-      nickname: 'Jennis',
-      full_name: 'Jennis Oprasert',
-    },
-    {
-      nickname: 'Miori',
-      full_name: 'Miori Ohkubo',
-    },
-  ];
-};
-
-export const charge = (event, context, callback): void => {
-  /*
-  axios.defaults.headers.post['Content-Type'] = 'multipart/form-data';
-    axios.defaults.headers.post['Authorization'] =
-      'Basic cGtleV90ZXN0XzViYjN3NzN2aGl4YWVvOHhzbHQ6IA==';
-    const data = new FormData();
-    
-    data.append('card[name]', 'Somchai Prasert');
-    data.append('card[number]', '4242424242424242');
-    data.append('card[expiration_month]', '10');
-    data.append('card[expiration_year]', '2018');
-    data.append('card[security_code]', '123');
-
-    axios
-      .post(OMISE_API_URL, data)
-      .then(returnToken => {
-        console.log(returnToken.data.id);
-        dispatch(loadCreditCardTokenSuccess(returnToken));
-      })
-      .catch(error => {
-        console.log(error.response.data.code);
-        dispatch(loadCreditCardTokenFailure(error.response));
-      });
-  };*/
+export const chargeByToken = async (event, context, callback) => {
   let response: ResponseRequest = new ResponseRequest(HTTP_REQUEST_SUCCESS, '');
   let inputObject: any;
   try {
@@ -66,8 +27,38 @@ export const charge = (event, context, callback): void => {
     } catch (err) {
       throw new Error(ERROR_CODE_INVALID_INPUT, 'Error on convert json');
     }
-    // const members = getBnkMembers();
-    // const response:ResponseRequest = new ResponseRequest(HTTP_REQUEST_SUCCESS,JSON.stringify(members));
+    if (
+      !inputObject.amount ||
+      validator.isEmpty(inputObject.amount) ||
+      !inputObject.currency ||
+      validator.isEmpty(inputObject.currency) ||
+      !inputObject.card ||
+      validator.isEmpty(inputObject.card)
+    ) {
+      throw new Error(ERROR_CODE_INVALID_INPUT, 'Invalid input');
+    }
+
+    axios.defaults.headers.post['Content-Type'] = 'multipart/form-data';
+    axios.defaults.headers.post['Authorization'] =
+      'Basic cGtleV90ZXN0XzViYjN3NzN2aGl4YWVvOHhzbHQ6IA==';
+    const data = new FormData();
+
+    data.append('amount', inputObject.amount);
+    data.append('currency', inputObject.currency);
+    data.append('card', inputObject.card);
+
+    await axios({
+      method: 'post',
+      url: OMISE_API_URL_CHARGE,
+      data,
+    })
+      .then(returnToken => {
+        console.log(returnToken);
+        response.statusCode = HTTP_REQUEST_SUCCESS;
+      })
+      .catch(error => {
+        response = errorToHttpStatusCode(Error.transformErrorFromAxios(error));
+      });
   } catch (error) {
     console.log(error);
     response = errorToHttpStatusCode(error);

@@ -23,6 +23,7 @@
       "class-name": true,
       "interface-name": [true, "always-prefix"],
       "quotemark": [true, "single", "jsx-double"],
+      "no-string-literal": false,
       "no-unused-variable": [true, {"ignore-pattern": "^I"}],
       "no-unused-expression": [true, "allow-fast-null-checks"]
     },

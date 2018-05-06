@@ -1,4 +1,5 @@
 import * as ErrorSet from '../common/error';
+import { omiseErrorMap } from '../common/errorList/omiseError';
 import * as ResponseRequestSet from '../common/responseRequest';
 
 export const errorToHttpStatusCode = (
@@ -22,19 +23,26 @@ export const errorToHttpStatusCode = (
       returnErrorResponse.statusCode =
         ResponseRequestSet.HTTP_REQUEST_UNPROCESSABLE_ENTITY;
     }
-    if (
-      error.code === ErrorSet.ERROR_CODE_MYSQL_CONNECTION
-    ) {
+    if (error.code === ErrorSet.ERROR_CODE_MYSQL_CONNECTION) {
       returnErrorResponse.statusCode = ResponseRequestSet.HTTP_REQUEST_FAIL;
     }
-    if (
-      error.code === ErrorSet.ERROR_CODE_USER_DUPLICATE_EMAIL
-    ) {
-      returnErrorResponse.statusCode = ResponseRequestSet.HTTP_REQUEST_UNPROCESSABLE_ENTITY;
+    if (error.code === ErrorSet.ERROR_CODE_USER_DUPLICATE_EMAIL) {
+      returnErrorResponse.statusCode =
+        ResponseRequestSet.HTTP_REQUEST_UNPROCESSABLE_ENTITY;
+    } else {
+      // check for omise error list
+      const omiseErrorCode: string = omiseErrorMap.get(error.code);
+      if (omiseErrorCode) {
+        returnErrorResponse.statusCode =
+          ResponseRequestSet.HTTP_REQUEST_UNPROCESSABLE_ENTITY;
+        error.code = omiseErrorCode;
+      }
     }
 
-    
-    returnErrorResponse.body = JSON.stringify({ code: error.code, message: error.message }) ;
+    returnErrorResponse.body = JSON.stringify({
+      code: error.code,
+      message: error.message,
+    });
   } else {
     returnErrorResponse.statusCode = ResponseRequestSet.HTTP_REQUEST_FAIL;
   }
