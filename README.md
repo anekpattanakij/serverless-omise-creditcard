@@ -5,6 +5,6 @@ Omise API implementation on serverless framework with typescript and offline
 serverless offline start
 
 ## Usage 
-http://localhost:3000/chargeByToken
+[POST] http://localhost:3000/chargeByToken
 
 # Good Luck!!
