@@ -1,10 +1,10 @@
 # Omise API on Serverless server
 Omise API implementation on serverless framework with typescript and offline 
 
-## Usage 
+## Starting on-premise usage 
 serverless offline start
 
-## Usage 
+## API Usage 
 [POST] http://localhost:3000/chargeByToken
 
 # Good Luck!!
